@@ -61,10 +61,10 @@ DATABASES = {
         'OPTIONS': {
             'options': '-c search_path=app,public',
         },
-        'NAME': 'urbantree',
-        'USER': 'urbantree',
-        'PASSWORD': 'urbantree',
-        'HOST': '127.0.0.1',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'joy_super',
+        'HOST': 'db.mwqvktnscaetadrbkhth.supabase.co',
         'PORT': '5432',
     },
 }
