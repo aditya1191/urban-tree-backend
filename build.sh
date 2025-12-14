@@ -1,4 +1,5 @@
 #!/bin/bash
+apt install python3-pip
 echo "Building the project..."
 python3.9 -m pip install -r requirements.txt
 echo "Make Migration..."
