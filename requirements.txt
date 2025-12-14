@@ -1,3 +1,31 @@
-Django>=4.2,<5.0
-djangorestframework>=3.14.0
-django-cors-headers>=4.0.0
+Django==3.2.25
+django-authtools==1.6.0
+django-braces==1.13.0
+django-cors-headers==4.1.0
+django-crispy-forms==1.7.2
+django-debug-toolbar==1.10.1
+django-environ==0.4.5
+django-spa==0.3.6
+djangorestframework==3.15.1
+python-decouple>=3.8  # For environment variables management
+# Core Django
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Environment Management
+python-decouple==3.8
+
+# Database (if using PostgreSQL in production)
+psycopg2-binary==2.9.9
+
+# Security & Performance
+gunicorn==21.2.0  # WSGI server for production
+whitenoise==6.6.0  # Static file serving
+
+# Development Tools
+django-debug-toolbar==4.2.0  # Only for development
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
