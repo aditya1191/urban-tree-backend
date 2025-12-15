@@ -12,3 +12,5 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 2
+      - key: PYTHON_VERSION
+        value: 3.10.19 # Or any other compatible version
