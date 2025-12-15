@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: urbantree
+    plan: free
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn urbantree.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        sync: false   # This tells Render: "Don't look here for the value; I will add it manually in the dashboard."
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 2
