@@ -1,4 +1,5 @@
 from pathlib import Path
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,7 +22,8 @@ INSTALLED_APPS = [
     'corsheaders',
     
     # Your apps
-    'dbmodels',
+    'dbmodels'
+    # '.vercel.app'
 ]
 
 MIDDLEWARE = [
@@ -56,18 +58,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'urbantree.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'OPTIONS': {
-            'options': '-c search_path=app,public',
-        },
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'joy_super',
-        'HOST': 'db.mwqvktnscaetadrbkhth.supabase.co',
-        'PORT': '5432',
-    },
+    'default': dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default='postgresql://postgres:joy_super@db.mwqvktnscaetadrbkhth.supabase.co:5432/postgres',
+        conn_max_age=600
+    )
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'OPTIONS': {
+#             'options': '-c search_path=app,public',
+#         },
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': 'joy_super',
+#         'HOST': 'db.mwqvktnscaetadrbkhth.supabase.co',
+#         'PORT': '5432',
+#     },
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
