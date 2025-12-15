@@ -7,7 +7,11 @@ SECRET_KEY = 'django-insecure-change-this-in-production-12345'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'urbantree.onrender.com',
+    'localhost',
+    'urban-tree-web.vercel.app'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -60,7 +64,7 @@ WSGI_APPLICATION = 'urbantree.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default='postgresql://postgres:joy_super@db.mwqvktnscaetadrbkhth.supabase.co:5432/postgres',
+        default='postgresql://urbantree:urbantree@localhost:5432/urbantree',
         conn_max_age=600
     )
 }
@@ -110,9 +114,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
     'http://localhost:5173', 
-    'http://127.0.0.1:5173'
+    'http://127.0.0.1:5173',
+    'https://urban-tree-web.vercel.app',
+    'http://urban-tree-web.vercel.app'
 ]
 CORS_ALLOW_CREDENTIALS = True
-
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5173', 
-    'http://127.0.0.1:5173']
+    'http://127.0.0.1:5173', 'https://urban-tree-web.vercel.app', 'http://urban-tree-web.vercel.app']
