@@ -138,6 +138,21 @@ CORS_ALLOWED_ORIGINS = [
     'https://urban-tree-web.vercel.app',
     'http://urban-tree-web.vercel.app'
 ]
+
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "content-disposition"
+)
+
+
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5173', 'https://urbantree.onrender.com',
     'http://127.0.0.1:5173', 'https://urban-tree-web.vercel.app', 'http://urban-tree-web.vercel.app']
