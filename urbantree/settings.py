@@ -22,15 +22,15 @@ ALLOWED_HOSTS = [
     'urban-tree-web.vercel.app'
 ]
 
-# Session Cookie Settings
+# Session Cookie Settings (Keep these secure)
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True  # Keep session hidden from JS
 
 # CSRF Cookie Settings
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+CSRF_COOKIE_HTTPONLY = False  # <--- CRITICAL: Must be False to read from document.cookie
 
 INSTALLED_APPS = [
     'django.contrib.admin',
