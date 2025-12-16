@@ -140,7 +140,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_HEADERS = (
-    "content-disposition"
+    "content-disposition",
+    'x-csrftoken'
 )
 
 
