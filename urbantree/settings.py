@@ -22,6 +22,16 @@ ALLOWED_HOSTS = [
     'urban-tree-web.vercel.app'
 ]
 
+# Session Cookie Settings
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+
+# CSRF Cookie Settings
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -129,5 +139,5 @@ CORS_ALLOWED_ORIGINS = [
     'http://urban-tree-web.vercel.app'
 ]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5173', 
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:5173', 'https://urbantree.onrender.com',
     'http://127.0.0.1:5173', 'https://urban-tree-web.vercel.app', 'http://urban-tree-web.vercel.app']
