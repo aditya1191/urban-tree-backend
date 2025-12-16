@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
+from django.middleware.csrf import get_token
 from .models import UserProfile
 from .serializers import (
     UserSerializer, 
@@ -65,7 +66,13 @@ class RegisterView(APIView):
             )
             login(request, user)
             return Response({
-                'user': UserSerializer(user).data,
+                'user': UserSerializer(user)def get(self, request):
+        # REQUIRED because HttpOnly=True hides the cookie from React
+        csrf_token = get_token(request) 
+        return Response({
+            'detail': 'CSRF cookie set',
+            'csrfToken': csrf_token 
+        }).data,
                 'profile': profile,
                 'message': 'User registered successfully'
             }, status=status.HTTP_201_CREATED)
@@ -77,8 +84,12 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        # This just sets the CSRF cookie
-        return Response({'detail': 'CSRF_cookie'})
+        # REQUIRED because HttpOnly=True hides the cookie from React
+        csrf_token = get_token(request) 
+        return Response({
+            'detail': 'CSRF cookie set',
+            'csrfToken': csrf_token 
+        })
     
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -92,6 +103,7 @@ class LoginView(APIView):
                 profile = UserProfile.objects.get(user=user)
                 profile.last_login_time = timezone.now()
                 profile.save()
+                csrf_token = get_token(request)
                 
                 return Response({
                     'user': UserSerializer(user).data,
