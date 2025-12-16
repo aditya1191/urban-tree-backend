@@ -71,5 +71,8 @@ gunicorn==21.2.0
 # Static files
 whitenoise==6.6.0
 
-
 uvicorn==0.38.0
+
+pandas==2.3.3
+
+sqlalchemy==1.4 

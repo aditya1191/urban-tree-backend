@@ -18,6 +18,6 @@ urlpatterns = [
     path('auth/register/', views.RegisterView.as_view(), name='register'),
     path('profile/me/', views.CurrentUserProfileView.as_view(), name='current-profile'),
     path('profile/update-role/<int:user_id>/', views.UpdateUserRoleView.as_view(), name='update-role'),
-    path('upload-csv/', UploadCSVFile.UploadCSVFile.as_view(), name='upload_csv'),
-    path('treeData/', TreeData.TreeData.as_view(), name='get_treeData')
+    path('upload-csv/', UploadCSVFile.as_view(), name='upload_csv'),
+    path('treeData/', TreeData.as_view(), name='get_treeData')
 ]

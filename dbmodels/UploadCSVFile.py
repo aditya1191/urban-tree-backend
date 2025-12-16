@@ -14,27 +14,27 @@ class UploadCSVFile(APIView):
     parser_classes = [FileUploadParser]
 
     def post(self, request):
-        # 1. AUTHENTICATION & INPUT SANITATION FOR CREDENTIALS
-        username_raw = request.POST.get("name")
-        password_raw = request.POST.get("password")
+        # # 1. AUTHENTICATION & INPUT SANITATION FOR CREDENTIALS
+        # username_raw = request.POST.get("name")
+        # password_raw = request.POST.get("password")
 
-        # Simple sanitization on username to remove leading/trailing whitespace and limit chars
-        username = username_raw.strip() if username_raw else None
-        password = password_raw.strip() if password_raw else None
+        # # Simple sanitization on username to remove leading/trailing whitespace and limit chars
+        # username = username_raw.strip() if username_raw else None
+        # password = password_raw.strip() if password_raw else None
 
-        # Basic check to ensure required fields were sent
-        if not username or not password:
-            return Response(
-                {"error": "Missing username or password"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # # Basic check to ensure required fields were sent
+        # if not username or not password:
+        #     return Response(
+        #         {"error": "Missing username or password"},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
 
-        user = authenticate(username=username, password=password)
+        # user = authenticate(username=username, password=password)
 
-        if user is None:
-            return Response(
-                {"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED
-            )
+        # if user is None:
+        #     return Response(
+        #         {"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED
+        #     )
 
         # User is authenticated, proceed with file processing
         csv_file = request.FILES.get("file")

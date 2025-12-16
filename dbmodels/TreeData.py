@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from sqlalchemy import create_engine, text # Import text for parameterized queries
 import pandas as pd
-import logging
+import logging, os
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,10 @@ class TreeData(APIView):
     
     # 1. Use environment variables/settings for DB connection (Security Best Practice)
     # The actual DB URL should be configured in settings.py or environment variables.
-    DB_URL = settings.DATABASE_URL_READ_ONLY 
+    DATABASE_URL = os.getenv(
+            "DATABASE_URL",
+            "postgresql+psycopg2://urbantree:urbantree@localhost:5432/urbantree",
+        )
     
     # Define a default limit to prevent accidental massive table dumps
     DEFAULT_LIMIT = 500
@@ -55,19 +58,11 @@ class TreeData(APIView):
                 {"error": "Failed to retrieve data from database."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # 4. Data Transformation (Cleaning unnecessary columns)
-        # Ensure 'tree_data' table structure is known, as relying on index (0, 1) is fragile.
-        # Assuming the first two columns are unnamed index columns we want to drop.
-        if df.shape[1] >= 2:
-            df_modified = df.drop(df.columns[[0, 1]], axis=1)
-        else:
-            df_modified = df
             
         # 5. Response Formatting
         # Use DRF's Response or Django's JsonResponse for proper header handling
         return JsonResponse(
-            df_modified.to_dict(orient='records'),
+            df.to_dict(orient='records'),
             safe=False,
             status=status.HTTP_200_OK
         )
