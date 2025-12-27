@@ -25,6 +25,24 @@ class IsAdminUser(permissions.BasePermission):
                request.user.userprofile.role == 'admin'
 
 
+# --- 1. NEW DEDICATED CSRF VIEW ---
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class CsrfTokenView(APIView):
+    """
+    Handshake view to get the CSRF token.
+    React calls this first to populate the 'X-CSRFToken' header.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        # 'get_token' ensures the cookie is generated if it doesn't exist
+        token = get_token(request)
+        return Response({
+            'csrfToken': token, 
+            'detail': 'CSRF token generated'
+        })
+
+
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for viewing and editing User instances."""
     queryset = User.objects.all()
@@ -60,36 +78,27 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            profile =UserProfile.objects.create(
+            profile = UserProfile.objects.create(
                 user=user,
                 role=request.data.get('role', 'viewer')
             )
+            # Optional: Log them in immediately after registration
             login(request, user)
+            
             return Response({
-                'user': UserSerializer(user)def get(self, request):
-        # REQUIRED because HttpOnly=True hides the cookie from React
-        csrf_token = get_token(request) 
-        return Response({
-            'detail': 'CSRF cookie set',
-            'csrfToken': csrf_token 
-        }).data,
-                'profile': profile,
+                'user': UserSerializer(user).data,
+                'profile': UserProfileSerializer(profile).data, 
                 'message': 'User registered successfully'
             }, status=status.HTTP_201_CREATED)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(ensure_csrf_cookie, name='dispatch')
+
 class LoginView(APIView):
     """Authenticate user and track login time."""
     permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        # REQUIRED because HttpOnly=True hides the cookie from React
-        csrf_token = get_token(request) 
-        return Response({
-            'detail': 'CSRF cookie set',
-            'csrfToken': csrf_token 
-        })
+    
+    # Removed the 'get' method. Use CsrfTokenView for the handshake.
     
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -100,11 +109,15 @@ class LoginView(APIView):
             
             if user:
                 login(request, user)
-                profile = UserProfile.objects.get(user=user)
-                profile.last_login_time = timezone.now()
-                profile.save()
-                csrf_token = get_token(request)
                 
+                try:
+                    profile = UserProfile.objects.get(user=user)
+                    profile.last_login_time = timezone.now()
+                    profile.save()
+                except UserProfile.DoesNotExist:
+                    # Fallback if profile is missing for some reason
+                    profile = UserProfile.objects.create(user=user, role='viewer')
+
                 return Response({
                     'user': UserSerializer(user).data,
                     'profile': UserProfileSerializer(profile).data,
@@ -129,6 +142,8 @@ class LogoutView(APIView):
             return Response({'message': 'Logout successful'}, 
                           status=status.HTTP_200_OK)
         except Exception as e:
+            # Fallback logout even if profile update fails
+            logout(request)
             return Response({'error': str(e)}, 
                           status=status.HTTP_400_BAD_REQUEST)
 
