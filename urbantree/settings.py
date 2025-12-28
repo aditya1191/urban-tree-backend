@@ -138,6 +138,14 @@ CORS_ALLOWED_ORIGINS = [
 # ]
 
 
+# 1. Allow the cookie to travel across domains (Crucial for Localhost -> Render)
+SESSION_COOKIE_SAMESITE = 'None' 
+CSRF_COOKIE_SAMESITE = 'None'
+
+# 2. Must be True if SameSite is None (Requires HTTPS, which Render has)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
