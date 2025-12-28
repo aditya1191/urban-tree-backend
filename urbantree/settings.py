@@ -35,6 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -42,7 +43,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "urbantree.urls"
@@ -125,19 +125,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://urban-tree-web.vercel.app",
 ]
 
-# CORS_ALLOW_HEADERS = [
-#     'accept',
-#     'accept-encoding',
-#     'authorization',
-#     'content-type',
-#     'dnt',
-#     'origin',
-#     'user-agent',
-#     'x-csrftoken',
-#     'x-requested-with',
-# ]
-
-
 # 1. Allow the cookie to travel across domains (Crucial for Localhost -> Render)
 SESSION_COOKIE_SAMESITE = 'None' 
 CSRF_COOKIE_SAMESITE = 'None'
@@ -146,13 +133,13 @@ CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+# 3. Trust Render's SSL Proxy (CRITICAL FIX)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://localhost:5173",
-    "https://urbantree.onrender.com",
-    "http://127.0.0.1:5173",
-    "https://urban-tree-web.vercel.app",
-    "http://urban-tree-web.vercel.app",
+    "http://localhost:5173",          # Local React
+    "http://127.0.0.1:5173",          # Local React Alt
+    "https://urbantree.onrender.com", # Production Backend
+    "https://urban-tree-web.vercel.app", # Production Frontend (HTTPS)
 ]
