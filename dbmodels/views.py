@@ -83,7 +83,7 @@ class RegisterView(APIView):
                 role=request.data.get('role', 'viewer')
             )
             # Optional: Log them in immediately after registration
-            login(request, user)
+            # login(request, user)
             
             return Response({
                 'user': UserSerializer(user).data,
@@ -109,6 +109,8 @@ class LoginView(APIView):
             
             if user:
                 login(request, user)
+                # 1. Get the NEW token
+                new_csrf_token = get_token(request)
                 
                 try:
                     profile = UserProfile.objects.get(user=user)
@@ -121,6 +123,7 @@ class LoginView(APIView):
                 return Response({
                     'user': UserSerializer(user).data,
                     'profile': UserProfileSerializer(profile).data,
+                    'csrfToken': new_csrf_token, # <--- CRITICAL ADDITION
                     'message': 'Login successful'
                 }, status=status.HTTP_200_OK)
             
