@@ -8,6 +8,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.middleware.csrf import get_token
 from .models import UserProfile
+from rest_framework.authtoken.models import Token # Import is crucial
 from .serializers import (
     UserSerializer, 
     UserProfileSerializer, 
@@ -25,17 +26,15 @@ class IsAdminUser(permissions.BasePermission):
                request.user.userprofile.role == 'admin'
 
 
-# --- 1. NEW DEDICATED CSRF VIEW ---
+# --- 1. CSRF VIEW (Still useful for initial handshake) ---
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class CsrfTokenView(APIView):
     """
     Handshake view to get the CSRF token.
-    React calls this first to populate the 'X-CSRFToken' header.
     """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        # 'get_token' ensures the cookie is generated if it doesn't exist
         token = get_token(request)
         return Response({
             'csrfToken': token, 
@@ -77,15 +76,28 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
+            # 1. Check for Admin Role Security
+            requested_role = request.data.get('role', 'viewer')
+            final_role = 'viewer'
+            
+            # Only allow setting 'admin' role if the REQUESTER is already an admin
+            # (Note: request.user might be anonymous here if public registration)
+            if (request.user.is_authenticated and 
+                hasattr(request.user, 'userprofile') and 
+                request.user.userprofile.role == 'admin'):
+                final_role = requested_role
+
             user = serializer.save()
             profile = UserProfile.objects.create(
                 user=user,
-                role=request.data.get('role', 'viewer')
+                role=final_role
             )
-            # Optional: Log them in immediately after registration
-            # login(request, user)
             
+            # 2. Generate Token immediately (Optional, helps if you want auto-login)
+            token, created = Token.objects.get_or_create(user=user)
+
             return Response({
+                'token': token.key, # Return token so frontend can auto-login if desired
                 'user': UserSerializer(user).data,
                 'profile': UserProfileSerializer(profile).data, 
                 'message': 'User registered successfully'
@@ -95,10 +107,8 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-    """Authenticate user and track login time."""
+    """Authenticate user and return API Token."""
     permission_classes = [permissions.AllowAny]
-    
-    # Removed the 'get' method. Use CsrfTokenView for the handshake.
     
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -108,22 +118,25 @@ class LoginView(APIView):
             user = authenticate(username=username, password=password)
             
             if user:
+                # 1. Standard Django Login (Maintains Session/CSRF capabilities)
                 login(request, user)
-                # 1. Get the NEW token
-                new_csrf_token = get_token(request)
                 
+                # 2. GET OR CREATE AUTH TOKEN (The Fix for Cross-Site Auth)
+                token, created = Token.objects.get_or_create(user=user)
+                
+                # 3. Update Last Login Time
                 try:
                     profile = UserProfile.objects.get(user=user)
                     profile.last_login_time = timezone.now()
                     profile.save()
                 except UserProfile.DoesNotExist:
-                    # Fallback if profile is missing for some reason
                     profile = UserProfile.objects.create(user=user, role='viewer')
 
+                # 4. Return Token + User Data
                 return Response({
+                    'token': token.key, # <--- SEND THIS TO REACT
                     'user': UserSerializer(user).data,
                     'profile': UserProfileSerializer(profile).data,
-                    'csrfToken': new_csrf_token, # <--- CRITICAL ADDITION
                     'message': 'Login successful'
                 }, status=status.HTTP_200_OK)
             
@@ -133,19 +146,27 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    """Log out user and track logout time."""
+    """Log out user and invalidate Token."""
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         try:
+            # 1. Update Logout Time
             profile = UserProfile.objects.get(user=request.user)
             profile.last_logout_time = timezone.now()
             profile.save()
+            
+            # 2. Delete the Token (Invalidates the API Key)
+            # This ensures the stolen token cannot be used again
+            request.user.auth_token.delete()
+            
+            # 3. Standard Logout
             logout(request)
+            
             return Response({'message': 'Logout successful'}, 
                           status=status.HTTP_200_OK)
         except Exception as e:
-            # Fallback logout even if profile update fails
+            # Even if something fails, try to logout
             logout(request)
             return Response({'error': str(e)}, 
                           status=status.HTTP_400_BAD_REQUEST)

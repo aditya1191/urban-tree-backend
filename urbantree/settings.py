@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party
     "rest_framework",
+    'rest_framework.authtoken', # <--- Add this
     "corsheaders",
     # Your apps
     "dbmodels",
@@ -108,6 +109,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        # Add TokenAuthentication FIRST
+        'rest_framework.authentication.TokenAuthentication',
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
