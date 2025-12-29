@@ -2,6 +2,8 @@
 
 ## Setup Instructions
 
+### Read build.sh for deployment based setup commands
+
 # Python version 3.10
 
 1. Install dependencies:
@@ -25,139 +27,83 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-## API Endpoints
+## 📡 API Endpoints & Usage
 
-- POST `/api/auth/register/` - Register new user
-- POST `/api/auth/login/` - Login
-- POST `/api/auth/logout/` - Logout
-- GET `/api/profile/me/` - Get current user profile
-- PATCH `/api/profile/update-role/<user_id>/` - Update user role (admin only)
-- GET `/api/users/` - List all users
-- GET `/api/profiles/` - List all profiles
+**Base URL:** `http://localhost:8000/api/` (Local)
 
-Cookie Management: The -c cookies.txt saves cookies and -b cookies.txt sends them with requests. This maintains your session.
-CSRF Token: After getting the CSRF token from the first request, extract it from the cookies and use it in X-CSRFToken header for POST/PUT/PATCH/DELETE requests.
-Base URL: Replace http://localhost:8000/api/ with your actual API base URL.
-User IDs: Replace user IDs (e.g., /users/1/, /profiles/2/) with actual IDs from your database.
-Admin Permissions: Some endpoints require admin role. Make sure you're logged in as an admin user for those requests.
+### Authentication Flow
 
+**1. Login (Get Token)**
 
+```bash
+# Request
+curl -X POST http://localhost:8000/api/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "jwinbourne", "password": "securepassword"}'
 
-curl -X GET http://localhost:8000/api/auth/csrf/ \
-  -c cookies.txt \
-  -H "Content-Type: application/json"
+# Response
+# {
+#   "token": "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b",
+#   "user": { ... },
+#   "message": "Login successful"
+# }
 
+```
 
-Extract CSRF Token from cookies:
+**2. Register New User (Admin Only)**
+*Requires a valid Admin Token.*
 
-
-  grep csrftoken cookies.txt | awk '{print $7}'
-
+```bash
 curl -X POST http://localhost:8000/api/auth/register/ \
-  -b cookies.txt \
-  -c cookies.txt \
   -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
+  -H "Authorization: Token <YOUR_ADMIN_TOKEN>" \
   -d '{
-    "username": "newuser",
-    "email": "newuser@example.com",
-    "password": "securepassword123",
-    "first_name": "John",
-    "last_name": "Doe",
-    "role": "viewer"
+    "username": "evan_paige",
+    "email": "evan@uml.edu",
+    "password": "pass",
+    "first_name": "Evan",
+    "role": "researcher"
   }'
 
-  curl -X POST http://localhost:8000/api/auth/login/ \
-  -b cookies.txt \
-  -c cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "username": "newuser",
-    "password": "securepassword123"
-  }'
+```
 
-  curl -X POST http://localhost:8000/api/auth/logout/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN"
+**3. Logout (Invalidate Token)**
 
-  curl -X GET http://localhost:8000/api/profile/me/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json"
+```bash
+curl -X POST http://localhost:8000/api/auth/logout/ \
+  -H "Authorization: Token <YOUR_TOKEN>"
 
-  curl -X GET http://localhost:8000/api/users/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json"
+```
 
+### Data Operations
 
-curl -X GET http://localhost:8000/api/users/1/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json"  
+**Upload Sensor Data (CSV)**
+*Requires Researcher or Admin Token.*
 
-curl -X POST http://localhost:8000/api/users/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "username": "adminuser",
-    "email": "admin@example.com",
-    "password": "adminpass123",
-    "first_name": "Admin",
-    "last_name": "User"
-  }'
+```bash
+curl -X POST http://localhost:8000/api/upload-csv/ \
+  -H "Authorization: Token <YOUR_TOKEN>" \
+  -F "csv_file=@sensor_data.csv" \
+  -F "name=jwinbourne" \
+  -F "password=securepassword"
 
-  curl -X PUT http://localhost:8000/api/users/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "username": "updateduser",
-    "email": "updated@example.com",
-    "first_name": "Updated",
-    "last_name": "Name"
-  }'
+```
 
-  curl -X PATCH http://localhost:8000/api/users/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "first_name": "NewFirstName"
-  }'
+**Fetch Tree Data**
 
-  curl -X DELETE http://localhost:8000/api/users/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN"
+```bash
+curl -X GET http://localhost:8000/api/treeData/ \
+  -H "Authorization: Token <YOUR_TOKEN>"
 
-  curl -X GET http://localhost:8000/api/profiles/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json"
+```
 
+**List Users (Admin Only)**
 
+```bash
+curl -X GET http://localhost:8000/api/users/ \
+  -H "Authorization: Token <YOUR_ADMIN_TOKEN>"
 
-curl -X PUT http://localhost:8000/api/profiles/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "user": 2,
-    "role": "admin"
-  }'
-
-  curl -X PATCH http://localhost:8000/api/profiles/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN" \
-  -d '{
-    "role": "editor"
-  }'
-
-  curl -X DELETE http://localhost:8000/api/profiles/2/ \
-  -b cookies.txt \
-  -H "Content-Type: application/json" \
-  -H "X-CSRFToken: YOUR_CSRF_TOKEN"
+```
 
 ## Testing
 
@@ -278,7 +224,6 @@ Please follow the steps given in this article. It has been explained in the most
 language.
 
 https://render.com/docs/deploy-django#deploying-to-render
-
 
 
 
